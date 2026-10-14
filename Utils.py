@@ -27,11 +27,14 @@ def getAllImagesFromDirectory(image_dir) -> List[ImageFile.ImageFile] | None:
 
 
 def getFramesDirectory(frame_number):
-    inputPath = os.getenv("FRAMES_STORE_PATH", "Frames")
+    inputPath = os.getenv("FRAMES_STORE_PATH")
+    if not inputPath:
+        logging.error("Environment variable 'FRAMES_STORE_PATH' is not set")
+        return None
     frameDir = os.path.join(inputPath, str(frame_number))
     if not os.path.exists(frameDir):
         logging.error(f"Frame directory does not exist: {frameDir}")
-        return
+        return None
     return frameDir
 
 
