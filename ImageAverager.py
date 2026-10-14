@@ -1,5 +1,4 @@
 import logging
-import math
 import os
 
 import numpy
@@ -23,19 +22,15 @@ def CreateAverageImage(frame_number):
     if not outputPath:
         logger.error("Environment variable 'AVERAGE_IMAGE_STORE_PATH' is not set")
         return None
-    
-    images = Utils.getAllImagesFromDirectory(
-        os.path.join(inputPath, str(frame_number))
-    )
+
+    images = Utils.getAllImagesFromDirectory(os.path.join(inputPath, str(frame_number)))
 
     if not images:
         logger.error("No images provided for averaging.")
         return None
 
     totalImages = len(images)
-    average_image_path = os.path.join(
-            outputPath, f"frame_{frame_number}_average.jpg"
-        )
+    average_image_path = os.path.join(outputPath, f"frame_{frame_number}_average.jpg")
 
     # Ensure all images are the same size
     first_image = images[0]
@@ -47,7 +42,9 @@ def CreateAverageImage(frame_number):
 
     # Create a new image to hold the average
     average_image = Image.new("RGB", (width, height))
-    outputArr = numpy.zeros((height, width, 3), dtype=numpy.float32)  # Initialize an array to hold the sum of pixel values
+    outputArr = numpy.zeros(
+        (height, width, 3), dtype=numpy.float32
+    )  # Initialize an array to hold the sum of pixel values
 
     # Sum up all pixel values
     logger.info("getting pixel data from images")
@@ -55,13 +52,19 @@ def CreateAverageImage(frame_number):
         for img in images:
             img = img.convert("RGB")  # Ensure image is in RGB mode
             imgArray = asarray(img, dtype=numpy.float32)  # Convert image to numpy array
-            outputArr += numpy.square(imgArray)  # Add the square of pixel values to the output array
+            outputArr += numpy.square(
+                imgArray
+            )  # Add the square of pixel values to the output array
             bar()
 
-    outputArray = numpy.sqrt(outputArr / totalImages)  # Calculate the square root of the average of squared values
-    intArray = numpy.array(outputArray, dtype=numpy.uint8)  # Convert to uint8 for image saving
-    average_image = Image.fromarray(intArray, 'RGB')  #
-    
+    outputArray = numpy.sqrt(
+        outputArr / totalImages
+    )  # Calculate the square root of the average of squared values
+    intArray = numpy.array(
+        outputArray, dtype=numpy.uint8
+    )  # Convert to uint8 for image saving
+    average_image = Image.fromarray(intArray, "RGB")
+
     os.makedirs(outputPath, exist_ok=True)
     average_image.save(average_image_path)
     logger.info(f"Saved average image to: {average_image_path}")

@@ -73,4 +73,3 @@ def stitchFrames(frame_number):
         createCollage(images, frameDir, frame_number)
     else:
         print("No valid images to create collage.")
-
