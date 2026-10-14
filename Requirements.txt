@@ -1,0 +1,5 @@
+imageio[ffmpeg]
+pillow
+alive_progress
+numpy
+python-dotenv
