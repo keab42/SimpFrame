@@ -2,6 +2,7 @@ import logging
 import math
 import os
 
+import numpy
 from alive_progress import alive_bar
 from numpy import asarray, mean
 from PIL import Image
@@ -9,19 +10,32 @@ from PIL import Image
 import Utils
 
 logger = logging.getLogger(__name__)
-InputImagePath = os.getenv("FRAMES_STORE_PATH", "Frames")
-OutputImagePath = os.getenv("COLLAGES_STORE_PATH", "Collages")
 
 
 def CreateAverageImage(frame_number):
+    inputPath = os.getenv("FRAMES_STORE_PATH")
+    outputPath = os.getenv("AVERAGE_IMAGE_STORE_PATH")
 
+    if not inputPath:
+        logger.error("Environment variable 'FRAMES_STORE_PATH' is not set")
+        return None
+
+    if not outputPath:
+        logger.error("Environment variable 'AVERAGE_IMAGE_STORE_PATH' is not set")
+        return None
+    
     images = Utils.getAllImagesFromDirectory(
-        os.path.join(InputImagePath, str(frame_number))
+        os.path.join(inputPath, str(frame_number))
     )
 
     if not images:
         logger.error("No images provided for averaging.")
         return None
+
+    totalImages = len(images)
+    average_image_path = os.path.join(
+            outputPath, f"frame_{frame_number}_average.jpg"
+        )
 
     # Ensure all images are the same size
     first_image = images[0]
@@ -33,40 +47,21 @@ def CreateAverageImage(frame_number):
 
     # Create a new image to hold the average
     average_image = Image.new("RGB", (width, height))
-
-    allData = []
+    outputArr = numpy.zeros((height, width, 3), dtype=numpy.float32)  # Initialize an array to hold the sum of pixel values
 
     # Sum up all pixel values
     logger.info("getting pixel data from images")
-    for img in images:
-        # img = Image.open(image)
-        img = img.convert("RGB")  # Ensure image is in RGB mode
-        allData.append(img.get_flattened_data())
+    with alive_bar(totalImages) as bar:
+        for img in images:
+            img = img.convert("RGB")  # Ensure image is in RGB mode
+            imgArray = asarray(img, dtype=numpy.float32)  # Convert image to numpy array
+            outputArr += numpy.square(imgArray)  # Add the square of pixel values to the output array
+            bar()
 
-    logger.info("averaging pixels")
-    with alive_bar(width * height) as bar:
-        for j in range(height):
-            for i in range(width):
-
-                r, g, b = 0, 0, 0
-                totalImages = len(allData)
-
-                for dataset in allData:
-                    pixel = dataset[j * width + i]
-                    r += pixel[0] * pixel[0]
-                    g += pixel[1] * pixel[1]
-                    b += pixel[2] * pixel[2]
-
-                r = math.isqrt(r // totalImages)
-                g = math.isqrt(g // totalImages)
-                b = math.isqrt(b // totalImages)
-
-                average_image.putpixel((i, j), (r, g, b))
-                bar()
-
-    average_image_path = os.path.join(
-        OutputImagePath, f"frame_{frame_number}_average.jpg"
-    )
-    os.makedirs(OutputImagePath, exist_ok=True)
+    outputArray = numpy.sqrt(outputArr / totalImages)  # Calculate the square root of the average of squared values
+    intArray = numpy.array(outputArray, dtype=numpy.uint8)  # Convert to uint8 for image saving
+    average_image = Image.fromarray(intArray, 'RGB')  #
+    
+    os.makedirs(outputPath, exist_ok=True)
     average_image.save(average_image_path)
     logger.info(f"Saved average image to: {average_image_path}")
