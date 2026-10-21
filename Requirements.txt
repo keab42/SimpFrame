@@ -1,5 +1,6 @@
-imageio[ffmpeg]
+imageio
 pillow
 alive_progress
 numpy
 python-dotenv
+av

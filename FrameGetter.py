@@ -19,7 +19,7 @@ def saveFrameFromVideo(video_path, frame_number):
     )
     os.makedirs(os.path.dirname(savePath), exist_ok=True)
     try:
-        imageArray = iio.imread(video_path, index=frame_number)
+        imageArray = iio.imread(video_path, index=frame_number, plugin="pyav")
         image = Image.fromarray(imageArray)
 
         image.save(savePath)
