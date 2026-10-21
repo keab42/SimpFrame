@@ -2,7 +2,7 @@ import logging
 import os
 from typing import List
 
-from PIL import Image, ImageFile
+from PIL import Image, ImageFile, ImageOps
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def getAllImagesFromDirectory(image_dir) -> List[ImageFile.ImageFile] | None:
     images = []
 
-    imageFiles = [f for f in os.listdir(image_dir) if f.endswith(".png")]
+    imageFiles = [f for f in os.listdir(image_dir) if f.endswith(".jpg") or f.endswith(".png")]
     if not imageFiles:
         logging.error(f"No image files found in directory: {image_dir}")
         return None
@@ -36,6 +36,11 @@ def getFramesDirectory(frame_number):
         logging.error(f"Frame directory does not exist: {frameDir}")
         return None
     return frameDir
+
+def getResizedImage(image, target_size):
+    # Resize the image while maintaining aspect ratio
+    return_img = ImageOps.pad(image, target_size, color="#000")
+    return return_img
 
 
 def cleanupFrames(frame_number):

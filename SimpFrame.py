@@ -32,6 +32,11 @@ parser.add_argument(
     action="store_true",
     help="If set, also generate an average image for the selected frame number.",
 )
+parser.add_argument(
+    "--debug",
+    action="store_true",
+    help="If set, also generate an average image for the selected frame number.",
+)
 args = parser.parse_args()
 
 
@@ -43,7 +48,8 @@ def main():
     ImageStitcher.stitchFrames(frameNum)
     if args.generate_average_image:
         ImageAverager.CreateAverageImage(frameNum)
-    Utils.cleanupFrames(frameNum)
+    if not args.debug:
+        Utils.cleanupFrames(frameNum)
 
 
 def setup_logger():

@@ -10,7 +10,6 @@ import Utils
 
 logger = logging.getLogger(__name__)
 
-
 def CreateAverageImage(frame_number):
     inputPath = os.getenv("FRAMES_STORE_PATH")
     outputPath = os.getenv("AVERAGE_IMAGE_STORE_PATH")
@@ -34,22 +33,21 @@ def CreateAverageImage(frame_number):
 
     # Ensure all images are the same size
     first_image = images[0]
-    width, height = first_image.size
-    for img in images:
-        if img.size != (width, height):
-            logger.error("All images must be the same size for averaging.")
-            return None
+    frame_width, frame_height = first_image.size
+    logging.info(f"Image size = {first_image.size}")
 
     # Create a new image to hold the average
-    average_image = Image.new("RGB", (width, height))
+    average_image = Image.new("RGB", (frame_width, frame_height))
     outputArr = numpy.zeros(
-        (height, width, 3), dtype=numpy.float32
+        (frame_height, frame_width, 3), dtype=numpy.float32
     )  # Initialize an array to hold the sum of pixel values
 
     # Sum up all pixel values
     logger.info("getting pixel data from images")
     with alive_bar(totalImages) as bar:
         for img in images:
+            if img.size[0] != frame_width or img.size[1] != frame_height:
+                img = Utils.getResizedImage(img, first_image.size)
             img = img.convert("RGB")  # Ensure image is in RGB mode
             imgArray = asarray(img, dtype=numpy.float32)  # Convert image to numpy array
             outputArr += numpy.square(
@@ -64,6 +62,7 @@ def CreateAverageImage(frame_number):
         outputArray, dtype=numpy.uint8
     )  # Convert to uint8 for image saving
     average_image = Image.fromarray(intArray, "RGB")
+    average_image = average_image.convert("RGB")
 
     os.makedirs(outputPath, exist_ok=True)
     average_image.save(average_image_path)
