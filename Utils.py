@@ -37,11 +37,14 @@ def getFramesDirectory(frame_number):
         return None
     return frameDir
 
-def getResizedImage(image, target_size):
+def getResizedImage(image, target_size:tuple[int, int]):
     # Resize the image while maintaining aspect ratio
     return_img = ImageOps.pad(image, target_size, color="#000")
     return return_img
 
+def getImageThumbnail(image, target_size:tuple[int, int]):
+    image.thumbnail(target_size)
+    return image
 
 def cleanupFrames(frame_number):
     frameDir = getFramesDirectory(frame_number)
